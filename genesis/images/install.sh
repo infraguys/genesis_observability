@@ -24,6 +24,7 @@ set -o pipefail
 
 GRAFANA_VERSION="12.0.2"
 LOKI_VERSION="3.4.4"
+PROMETHEUS_VERSION="3.4.1"
 
 WORK_DIR="/tmp"
 SHARE_DIR="/usr/share/genesis_observability"
@@ -53,7 +54,31 @@ wget https://dl.grafana.com/oss/release/grafana_"$GRAFANA_VERSION"_amd64.deb
 dpkg -i grafana_"$GRAFANA_VERSION"_amd64.deb
 
 mkdir -p "$GRAFANA_CONFIG_DIR/provisioning/datasources/"
-cp "$SHARE_DIR/grafana/provisioning/datasources/loki-datasource.yaml" "$GRAFANA_CONFIG_DIR/provisioning/datasources/loki-datasource.yaml"
+cp ${SHARE_DIR}/grafana/provisioning/datasources/*-datasource.yaml "$GRAFANA_CONFIG_DIR/provisioning/datasources/"
 
 # Enable grafana
 systemctl enable grafana-server
+
+# Install Prometheus
+URL="https://github.com/prometheus/prometheus/releases/download/v$PROMETHEUS_VERSION/prometheus-$PROMETHEUS_VERSION.linux-amd64.tar.gz"
+
+curl -LO "$URL"
+tar -xzf prometheus-*.tar.gz
+mv "prometheus-$PROMETHEUS_VERSION.linux-amd64" /opt/prometheus
+ln -sf /opt/prometheus/prometheus /usr/local/bin/prometheus
+ln -sf /opt/prometheus/promtool /usr/local/bin/promtool
+
+mkdir /prometheus
+mkdir /etc/prometheus
+
+useradd --no-create-home --shell /bin/false prometheus
+chown -R prometheus:prometheus /opt/prometheus
+chown prometheus:prometheus /prometheus
+
+cp /usr/share/genesis_observability/prometheus/prometheus.service /etc/systemd/system/prometheus.service
+cp /usr/share/genesis_observability/prometheus/prometheus.yml /etc/prometheus/prometheus.yml
+
+systemctl daemon-reexec
+systemctl daemon-reload
+systemctl enable --now prometheus
+
