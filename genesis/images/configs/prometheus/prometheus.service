@@ -1,0 +1,13 @@
+[Unit]
+Description=Prometheus Monitoring
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+ExecStart=/opt/prometheus/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus
+
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
