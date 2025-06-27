@@ -80,5 +80,5 @@ cp /usr/share/genesis_observability/prometheus/prometheus.yml /etc/prometheus/pr
 
 systemctl daemon-reexec
 systemctl daemon-reload
-systemctl enable --now prometheus
+systemctl enable prometheus
 
