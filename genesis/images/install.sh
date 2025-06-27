@@ -28,8 +28,11 @@ PROMETHEUS_VERSION="3.4.1"
 
 WORK_DIR="/tmp"
 SHARE_DIR="/usr/share/genesis_observability"
+
 PROMTAIL_CONFIG_DIR="/etc/promtail"
 GRAFANA_CONFIG_DIR="/etc/grafana"
+LOKI_CONFIG_DIR="/etc/loki"
+LOKI_DATA_DIR="/var/lib/loki/data"
 
 
 cd "$WORK_DIR"
@@ -45,6 +48,10 @@ dpkg -i promtail_"$LOKI_VERSION"_amd64.deb
 
 usermod -aG adm promtail
 cp "$SHARE_DIR/promtail/config.yml" "$PROMTAIL_CONFIG_DIR/config.yml"
+cp "$SHARE_DIR/loki/config.yml" "$LOKI_CONFIG_DIR/config.yml"
+
+mkdir -p "$LOKI_DATA_DIR"
+chown loki "$LOKI_DATA_DIR"
 
 systemctl enable loki
 systemctl enable promtail
